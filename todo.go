@@ -24,13 +24,28 @@ func check(e error) {
     }
 }
 
+func CheckFile(ops string) {
+    _, err := os.Stat(FilePath)
+    if os.IsNotExist(err) {
+        switch ops {
+        case "list":
+            fmt.Println("There is nothing to do. Chill")
+            os.Exit(0)
+        case "change":
+            fmt.Println("Error: There is no task to change.")
+            os.Exit(1)
+        }
+    }
+}
 
 // GetTodos get the current todo list from json file
 func GetTodos(todos *Todos) {
-    file, err := os.Open(FilePath)
-    check(err)
     fileInfo, err := os.Stat(FilePath)
-    check(err)
+    if os.IsNotExist(err) {
+        os.Create(FilePath)
+        fileInfo, _ = os.Stat(FilePath)
+    }
+    file, _ := os.Open(FilePath)
     if fileInfo.Size() !=0 {
         byteValue, err := io.ReadAll(file)
         check(err)
@@ -77,6 +92,7 @@ func Change(args []string) {
         First arg is task name and Second is the status`)
         os.Exit(1)
     } else {
+        CheckFile("change")
         name := args[0]
         status := args[1]
         var todos Todos
@@ -92,11 +108,7 @@ func Change(args []string) {
 
 // List function print the current todo list to console
 func List() {
-    _, err := os.Stat(FilePath)
-    if os.IsNotExist(err) {
-        fmt.Println("There is nothing to do. Chill")
-        os.Exit(0)
-    }
+    CheckFile("list")
     data, err := os.ReadFile(FilePath)
     check(err)
     fmt.Println(string(data))
