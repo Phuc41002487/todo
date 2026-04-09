@@ -1,16 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
-    "encoding/json"
 )
 
 const FilePath = "./TodoList.json"
 
+type Todos struct {
+    Todos []Todo `json:"todos"`
+}
+
 type Todo struct {
-    Name string
-    Status string
+    Name string `json:"name"`
+    Status string `json:"status"`
 }
 
 func check(e error) {
@@ -25,14 +30,28 @@ func add(args []string) {
     // Ensure the file is closed after the function is completed
     defer file.Close()
     check(err)
+    fileInfo, err := os.Stat(FilePath)
+    var todos Todos
+
+    if fileInfo.Size() !=0 {
+        fmt.Println("go here")
+        byteValue, err := io.ReadAll(file)
+        check(err)
+        err = json.Unmarshal(byteValue, &todos)
+    }
+
+    file, err = os.Create(FilePath)
+    check(err)
     
     for _, arg := range args {
         todo := Todo {
             Name: arg,
             Status: "Undone",
         }
-        dat, err := json.Marshal(todo)
-
+        todos.Todos = append(todos.Todos, todo)
+        dat, err := json.MarshalIndent(todos, "", "  ")
+        check(err)
+        fmt.Println(string(dat))
         _, err = file.WriteString(string(dat) + "\n")
         check(err)
     }
