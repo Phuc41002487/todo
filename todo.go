@@ -92,6 +92,11 @@ func Change(args []string) {
 
 // List function print the current todo list to console
 func List() {
+    _, err := os.Stat(FilePath)
+    if os.IsNotExist(err) {
+        fmt.Println("There is nothing to do. Chill")
+        os.Exit(0)
+    }
     data, err := os.ReadFile(FilePath)
     check(err)
     fmt.Println(string(data))
