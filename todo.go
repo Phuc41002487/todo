@@ -24,40 +24,74 @@ func check(e error) {
     }
 }
 
-func add(args []string) {
-    // 0644: Owner read write, Everyone read
-    file, err := os.OpenFile(FilePath, os.O_APPEND|os.O_CREATE, 0644)
-    // Ensure the file is closed after the function is completed
-    defer file.Close()
+
+// GetTodos get the current todo list from json file
+func GetTodos(todos *Todos) {
+    file, err := os.Open(FilePath)
     check(err)
     fileInfo, err := os.Stat(FilePath)
-    var todos Todos
-
+    check(err)
     if fileInfo.Size() !=0 {
-        fmt.Println("go here")
         byteValue, err := io.ReadAll(file)
         check(err)
         err = json.Unmarshal(byteValue, &todos)
     }
+}
 
-    file, err = os.Create(FilePath)
+// Write todo list to json file
+func WriteTodos(todos Todos) {
+    file, err := os.Create(FilePath)
     check(err)
-    
+    // Ensure the file is closed after the function is completed
+    defer file.Close()
+    dat, err := json.MarshalIndent(todos, "", "  ")
+    check(err)
+    fmt.Println(string(dat))
+    _, err = file.WriteString(string(dat) + "\n")
+    check(err)
+}
+
+// Add function add all the task enter in the CLI to todo list.
+// At the end print the complete list of task in the console
+func Add(args []string) {
+    // Get existing task
+    var todos Todos
+    GetTodos(&todos)
     for _, arg := range args {
         todo := Todo {
             Name: arg,
             Status: "Undone",
         }
         todos.Todos = append(todos.Todos, todo)
-        dat, err := json.MarshalIndent(todos, "", "  ")
-        check(err)
-        fmt.Println(string(dat))
-        _, err = file.WriteString(string(dat) + "\n")
-        check(err)
+        WriteTodos(todos)
     }
 }
 
-func list() {
+// Change function change the status of task
+// The function accept two parameter:
+//   - taskname: used to identify the task to change status
+//   - status: status to changed to 
+func Change(args []string) {
+    if len(args) != 2 {
+        fmt.Println(`Error: change task status only support two arguments.
+        First arg is task name and Second is the status`)
+        os.Exit(1)
+    } else {
+        name := args[0]
+        status := args[1]
+        var todos Todos
+        GetTodos(&todos)
+        for i := range todos.Todos {
+            if todos.Todos[i].Name == name {
+                todos.Todos[i].Status = status
+            }
+        }
+        WriteTodos(todos)
+    }
+}
+
+// List function print the current todo list to console
+func List() {
     data, err := os.ReadFile(FilePath)
     check(err)
     fmt.Println(string(data))
@@ -68,8 +102,10 @@ func main() {
     case "clear":
         os.Create(FilePath)
     case "add":
-        add(os.Args[2:])
+        Add(os.Args[2:])
     case "list":
-        list()
+        List()
+    case "change":
+        Change(os.Args[2:])
     }
 }
