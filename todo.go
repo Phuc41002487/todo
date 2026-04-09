@@ -1,12 +1,17 @@
 package main
 
 import (
-	//"fmt"
 	"fmt"
 	"os"
+    "encoding/json"
 )
 
 const FilePath = "./TodoList.json"
+
+type Todo struct {
+    Name string
+    Status string
+}
 
 func check(e error) {
     if e != nil {
@@ -15,13 +20,20 @@ func check(e error) {
 }
 
 func add(args []string) {
+    // 0644: Owner read write, Everyone read
     file, err := os.OpenFile(FilePath, os.O_APPEND|os.O_CREATE, 0644)
     // Ensure the file is closed after the function is completed
     defer file.Close()
     check(err)
+    
     for _, arg := range args {
-        // 0644 mean Owner read write, Everyone Read
-        _, err := file.WriteString(arg + "\n")
+        todo := Todo {
+            Name: arg,
+            Status: "Undone",
+        }
+        dat, err := json.Marshal(todo)
+
+        _, err = file.WriteString(string(dat) + "\n")
         check(err)
     }
 }
