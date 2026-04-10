@@ -117,6 +117,22 @@ func Change(args []string) {
     }
 }
 
+//Delete function delete task specify by the cli arguments
+func Delete(args []string) {
+    var todos Todos
+    GetTodos(&todos)
+    for _, arg := range args {
+        result := todos.Todos[:0]
+        for _, todo := range todos.Todos {
+            if todo.Name != arg {
+                result = append(result, todo)
+            }
+        }
+        todos.Todos = result
+    }
+    WriteTodos(todos)
+}
+
 // List function print the current todo list to console
 func List() {
     CheckFile("list")
@@ -135,5 +151,7 @@ func main() {
         List()
     case "change":
         Change(os.Args[2:])
+    case "delete":
+        Delete(os.Args[2:])
     }
 }
