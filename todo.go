@@ -54,6 +54,7 @@ func GetTodos(todos *Todos) {
         byteValue, err := io.ReadAll(file)
         check(err)
         err = json.Unmarshal(byteValue, &todos)
+        check(err)
     }
 }
 
@@ -121,16 +122,20 @@ func Change(args []string) {
 func Delete(args []string) {
     var todos Todos
     GetTodos(&todos)
-    for _, arg := range args {
-        result := todos.Todos[:0]
-        for _, todo := range todos.Todos {
-            if todo.Name != arg {
-                result = append(result, todo)
+    if len(todos.Todos) == 0 {
+        fmt.Println("There is no task to delete. Chill")
+    } else {
+        for _, arg := range args {
+            result := todos.Todos[:0]
+            for _, todo := range todos.Todos {
+                if todo.Name != arg {
+                    result = append(result, todo)
+                }
             }
+            todos.Todos = result
         }
-        todos.Todos = result
+        WriteTodos(todos)
     }
-    WriteTodos(todos)
 }
 
 // List function print the current todo list to console
