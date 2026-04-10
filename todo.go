@@ -43,9 +43,13 @@ func GetTodos(todos *Todos) {
     fileInfo, err := os.Stat(FilePath)
     if os.IsNotExist(err) {
         os.Create(FilePath)
-        fileInfo, _ = os.Stat(FilePath)
+        fileInfo, err = os.Stat(FilePath)
+        check(err)
+    } else {
+        check(err)
     }
-    file, _ := os.Open(FilePath)
+    file, err := os.Open(FilePath)
+    check(err)
     if fileInfo.Size() !=0 {
         byteValue, err := io.ReadAll(file)
         check(err)
