@@ -76,14 +76,21 @@ func Add(args []string) {
     // Get existing task
     var todos Todos
     GetTodos(&todos)
+    Outer:
     for _, arg := range args {
+        for i := range todos.Todos {
+            if todos.Todos[i].Name == arg {
+                fmt.Println("Task " + arg + " already existed.")
+                continue Outer
+            }
+        }
         todo := Todo {
             Name: arg,
             Status: "Undone",
         }
         todos.Todos = append(todos.Todos, todo)
-        WriteTodos(todos)
     }
+    WriteTodos(todos)
 }
 
 // Change function change the status of task
