@@ -8,6 +8,8 @@ import (
 )
 
 const FilePath = "./TodoList.json"
+const Undone = "Undone"
+const Done = "Done"
 
 type Todos struct {
     Todos []Todo `json:"todos"`
@@ -111,7 +113,12 @@ func Change(args []string) {
         GetTodos(&todos)
         for i := range todos.Todos {
             if todos.Todos[i].Name == name {
-                todos.Todos[i].Status = status
+                if ((status == Undone) || (status == Done)) {
+                    todos.Todos[i].Status = status
+                } else {
+                    fmt.Printf("Error: status can only be %s or %s.\n", Undone, Done)
+                    os.Exit(1)
+                }
             }
         }
         WriteTodos(todos)
