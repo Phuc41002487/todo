@@ -10,6 +10,7 @@ import (
 const FilePath = "./TodoList.json"
 const Undone = "Undone"
 const Done = "Done"
+const Nothing = "There is nothing to do. Chill"
 
 type Todos struct {
     Todos []Todo `json:"todos"`
@@ -23,20 +24,6 @@ type Todo struct {
 func check(e error) {
     if e != nil {
         panic(e)
-    }
-}
-
-func CheckFile(ops string) {
-    _, err := os.Stat(FilePath)
-    if !os.IsNotExist(err) {
-        switch ops {
-        case "list":
-            fmt.Println("There is nothing to do. Chill")
-            os.Exit(0)
-        case "change":
-            fmt.Println("Error: There is no task to change.")
-            os.Exit(1)
-        }
     }
 }
 
@@ -106,11 +93,14 @@ func Change(args []string) {
         First arg is task name and Second is the status`)
         os.Exit(1)
     } else {
-        CheckFile("change")
-        name := args[0]
-        status := args[1]
         var todos Todos
         GetTodos(&todos)
+        if len(todos.Todos) == 0 {
+            fmt.Println("Error: There is no task to change")
+            os.Exit(1)
+        }
+        name := args[0]
+        status := args[1]
         for i := range todos.Todos {
             if todos.Todos[i].Name == name {
                 if ((status == Undone) || (status == Done)) {
@@ -147,10 +137,15 @@ func Delete(args []string) {
 
 // List function print the current todo list to console
 func List() {
-    CheckFile("list")
-    data, err := os.ReadFile(FilePath)
-    check(err)
-    fmt.Println(string(data))
+    var todos Todos
+    GetTodos(&todos)
+    if len(todos.Todos) == 0 {
+        fmt.Println(Nothing)
+    } else {
+        for _, todo := range todos.Todos {
+            fmt.Println(todo.Name + " | " + todo.Status)
+        }
+    }
 }
 
 // Help function show the information about the app and how to use it
