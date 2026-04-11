@@ -28,7 +28,7 @@ func check(e error) {
 
 func CheckFile(ops string) {
     _, err := os.Stat(FilePath)
-    if os.IsNotExist(err) {
+    if !os.IsNotExist(err) {
         switch ops {
         case "list":
             fmt.Println("There is nothing to do. Chill")
